@@ -32,6 +32,9 @@ abstract class Vendedor {
   /*puntos*/
   abstract fun esInfluyente(): Boolean
 
+  fun esGenerico() : Boolean {
+    return this.otrasCertificaciones() >= 1
+  }
 }
 
 // En los parámetros, es obligatorio poner el tipo
@@ -70,7 +73,7 @@ class ComercioCorresponsal(val ciudades: List<Ciudad>) : Vendedor() {
 }
 
 class CentroDeDistribucion (val ubicacion: Ciudad){
-  var vendedores = mutableListOf<Vendedor>()
+  val vendedores = mutableListOf<Vendedor>()
 
   fun hayVendedor(vendedor:Vendedor): Boolean {
     return this.vendedores.contains(vendedor)
@@ -79,10 +82,24 @@ class CentroDeDistribucion (val ubicacion: Ciudad){
   fun agregarVendedor(vendedor: Vendedor) {
     if (!hayVendedor(vendedor)) {
       vendedores.add(vendedor)
-    }
-    else {
+    } else {
       throw error("El vendedor ya está registrado")
     }
+  }
+  fun vendedorEstrella(): Vendedor? {
+    return vendedores.maxBy{ it.puntajeCertificaciones() }
+  }
 
+  fun puedeCubrir(ciudad: Ciudad) : Boolean {
+    return vendedores.any { it.puedeTrabajarEn(ciudad) }
+  }
+  fun vendedoresGenericos() : List<Vendedor> {
+    return vendedores.filter{v -> v.esGenerico()}
+  }
+  fun cantidadVendedoresFirmes() : Int {
+    return vendedores.count{v -> v.esFirme()}
+  }
+  fun esRobusto() : Boolean {
+    return this.cantidadVendedoresFirmes() >= 3
   }
 }
