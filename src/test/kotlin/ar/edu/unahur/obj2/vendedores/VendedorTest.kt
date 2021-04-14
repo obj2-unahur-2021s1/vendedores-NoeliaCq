@@ -121,6 +121,7 @@ class CentroDistribucionTest : DescribeSpec({
     centro1.agregarVendedor(malena)
     centro1.agregarVendedor(valeria)
     it("vendedor estrella") {
+
       centro1.vendedorEstrella().shouldBe(malena)
     }
 
