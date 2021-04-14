@@ -5,7 +5,10 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.should
+import io.kotest.matchers.shouldBe
 
 class ComercioTest : DescribeSpec({
   val buenosAires = Provincia(15000000)
@@ -48,10 +51,22 @@ class ComercioTest : DescribeSpec({
 class VendedorTest : DescribeSpec({
   val misiones = Provincia(1300000)
   val sanIgnacio = Ciudad(misiones)
+  val certif1 = Certificacion(esDeProducto = true, puntaje = 10)
+  val certif2 = Certificacion(esDeProducto = true, puntaje = 5)
+  val certif3 = Certificacion(esDeProducto = false, puntaje = 9)
 
   describe("Vendedor fijo") {
     val obera = Ciudad(misiones)
     val vendedorFijo = VendedorFijo(obera)
+    vendedorFijo.certificaciones.addAll(listOf(certif1, certif2, certif3))
+    describe("Es versatil o firme") {
+      it("es versatil") {
+        vendedorFijo.esVersatil().shouldBeTrue()
+      }
+      it("es firme") {
+        vendedorFijo.esFirme().shouldBeFalse()
+      }
+    }
 
     describe("puedeTrabajarEn") {
       it("su ciudad de origen") {
@@ -84,6 +99,12 @@ class CentroDistribucionTest : DescribeSpec({
   val chivilcoy = Ciudad(buenosAires)
   val centro1 = CentroDeDistribucion(chivilcoy)
   val valeria = VendedorFijo(chivilcoy)
+  val certif4 = Certificacion(esDeProducto = true, puntaje = 60)
+  val certif5 = Certificacion(esDeProducto = true, puntaje = 5)
+  val certif6 = Certificacion(esDeProducto = false, puntaje = 9)
+  val malena = VendedorFijo(chivilcoy)
+  valeria.certificaciones.addAll(listOf(certif5, certif6))
+  malena.certificaciones.addAll(listOf(certif4, certif5, certif6))
 
   describe("Agregar vendedores") {
     it("Agregar un vendedor") {
@@ -96,6 +117,13 @@ class CentroDistribucionTest : DescribeSpec({
       }
     }
   }
+  describe("Vendedores estrella") {
+    centro1.agregarVendedor(malena)
+    centro1.agregarVendedor(valeria)
+    it("vendedor estrella") {
+      centro1.vendedorEstrella().shouldBe(malena)
+    }
 
-  })
+  }
+})
 
