@@ -28,12 +28,23 @@ abstract class Vendedor {
   fun otrasCertificaciones() = certificaciones.count { !it.esDeProducto }
 
   fun puntajeCertificaciones() = certificaciones.sumBy { c -> c.puntaje }
+
+  /*puntos*/
+  abstract fun esInfluyente(): Boolean
+
+  fun esGenerico() : Boolean {
+    return this.otrasCertificaciones() >= 1
+  }
 }
 
 // En los parámetros, es obligatorio poner el tipo
 class VendedorFijo(val ciudadOrigen: Ciudad) : Vendedor() {
   override fun puedeTrabajarEn(ciudad: Ciudad): Boolean {
     return ciudad == ciudadOrigen
+  }
+
+  override fun esInfluyente(): Boolean {
+    return false
   }
 }
 
@@ -42,10 +53,53 @@ class Viajante(val provinciasHabilitadas: List<Provincia>) : Vendedor() {
   override fun puedeTrabajarEn(ciudad: Ciudad): Boolean {
     return provinciasHabilitadas.contains(ciudad.provincia)
   }
+  override fun esInfluyente():Boolean {
+    return provinciasHabilitadas.sumBy { p -> p.poblacion } >= 10000000
+  }
 }
 
 class ComercioCorresponsal(val ciudades: List<Ciudad>) : Vendedor() {
+
   override fun puedeTrabajarEn(ciudad: Ciudad): Boolean {
     return ciudades.contains(ciudad)
+  }
+  fun cantidadCiudadesConSucursal() : Int { return ciudades.size }
+  fun provinciasConSucursal() : Set<Provincia> { return ciudades.map { c -> c.provincia }.toSet()}
+  fun cantidadProvinciasConSucursal() : Int { return this.provinciasConSucursal().size}
+
+  override fun esInfluyente():Boolean {
+    return cantidadCiudadesConSucursal() >= 5 || cantidadProvinciasConSucursal() >= 3
+  }
+}
+
+class CentroDeDistribucion (val ubicacion: Ciudad){
+  val vendedores = mutableListOf<Vendedor>()
+
+  fun hayVendedor(vendedor:Vendedor): Boolean {
+    return this.vendedores.contains(vendedor)
+  }
+
+  fun agregarVendedor(vendedor: Vendedor) {
+    if (!hayVendedor(vendedor)) {
+      vendedores.add(vendedor)
+    } else {
+      throw error("El vendedor ya está registrado")
+    }
+  }
+  fun vendedorEstrella(): Vendedor? {
+    return vendedores.maxBy{ it.puntajeCertificaciones() }
+  }
+
+  fun puedeCubrir(ciudad: Ciudad) : Boolean {
+    return vendedores.any { it.puedeTrabajarEn(ciudad) }
+  }
+  fun vendedoresGenericos() : List<Vendedor> {
+    return vendedores.filter{v -> v.esGenerico()}
+  }
+  fun cantidadVendedoresFirmes() : Int {
+    return vendedores.count{v -> v.esFirme()}
+  }
+  fun esRobusto() : Boolean {
+    return this.cantidadVendedoresFirmes() >= 3
   }
 }
